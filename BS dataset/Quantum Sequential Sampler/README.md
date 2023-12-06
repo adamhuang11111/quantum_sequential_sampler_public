@@ -10,4 +10,7 @@
 ├── FitIndBSBeta3: main program for Bayesian sampler
 ├── MainFitIndBS3: main program for fitting
 ├── Outerloop3: settings for the bounds and particle swarm algorithm
+├── Ms - Mean Prediction
+├── nLLS - G square
+├── ParmS - best fitted parameters
 ```
