@@ -14,6 +14,9 @@ Public Repository for the Quantum Sequential Sampler Model.
 └── analysis_code: analysis codes for empirical result, and model comparisons
 └── BS dataset: models and analysis codes for the dataset in Zhu et al. (2020)
 ```
+## Note
+The model fits uploaded before 2026 came from an older version of the model code that contained a small error. The error has been fixed in the updated code, and the fits have been rerun with it. The difference in the results is subtle (1/300 of the fitted likelihood).
+
 ## Reference
 Huang, J., Busemeyer, J., Ebelt, Z., & Pothos, E. (2023). Quantum Sequential Sampler: a dynamical model for human probability reasoning and judgments. In Proceedings of the Annual Meeting of the Cognitive Science Society (Vol. 45, No. 45).
 <br />

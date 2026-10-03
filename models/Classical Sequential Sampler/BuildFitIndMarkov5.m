@@ -1,4 +1,4 @@
-% build mex file for quant model
+% build mex file for classical model
 clear
 clc
 
@@ -23,7 +23,7 @@ end
 
 parm = [0.5;.5*ones(8,1)]';
 
-codegen FitIndMarkov5_qp_int1_qq -args {parm,Cdat,cs}
+codegen FitIndMarkov5_qp_classical -args {parm,Cdat,cs}
 
 
 

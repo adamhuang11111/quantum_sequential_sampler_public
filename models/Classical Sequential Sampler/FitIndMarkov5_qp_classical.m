@@ -1,4 +1,12 @@
-function [nLL, nLLc, Pred, Psy0, Ks,Ms,Ords] = FitIndMarkov5_qp_classical(parm,Sdat,cs)
+function [nLL, nLLc, Pred, Psy0, Ks,Ms,Ords] = FitIndMarkov5_qp_classical(parm,Sdat,cs,heldout)
+% heldout selects the cross validation split (see OuterLoopGeneralization):
+%   0 (default) all 78 questions go into nLL, nLLc is unused
+%   1 hold out the disjunctions: nLL is the training G square on the other
+%     54 questions, nLLc the test G square on the 24 disjunctions
+%   2 hold out the conjunctions, the other way round
+if nargin < 4
+    heldout = 0;
+end
 nd = size(Sdat,1);
 alphakk = parm(7);
 ckk = parm(8);
@@ -190,7 +198,7 @@ end
 
 pAorB = 1 - pnAandnB;
 pnAorB = 1 - pAandnB;
-pAornB = 1 - pnAorB;
+pAornB = 1 - pnAandB;
 pnAornB = 1 - pAandB;
 
 %AC pairs
@@ -212,7 +220,7 @@ end
 
 pAorC = 1 - pnAandnC;
 pnAorC = 1 - pAandnC;
-pAornC = 1 - pnAorC;
+pAornC = 1 - pnAandC;
 pnAornC = 1 - pAandC;
 
 %BC pairs
@@ -235,7 +243,7 @@ end
 
 pBorC = 1 - pnBandnC;
 pnBorC = 1 - pBandnC;
-pBornC = 1 - pnBorC;
+pBornC = 1 - pnBandC;
 pnBornC = 1 - pBandC;
 %%
 % A = A1,  B = A2,  C = A3
@@ -338,10 +346,10 @@ pAorC    ;     pnAorC    ;    pAornC ;       pnAornC  ; ];
 Ords = [Ord1,Ord2,Ord3,Ord4,Ord5,Ord6,Ord7,Ord8,Ord9];
 
 %% Cross validation
-% conj_index = [11 12 13 14 23 24 25 26 35 36 37 38 47 48 49 50 59 60 ...
-%     61 62 71 72 73 74];
-% disj_index = [15 16 17 18 27 28 29 30 39 40 41 42 51 52 53 54 ... 
-%     63 64 65 66 75 76 77 78];
+conj_index = [11 12 13 14 23 24 25 26 35 36 37 38 47 48 49 50 59 60 ...
+    61 62 71 72 73 74];
+disj_index = [15 16 17 18 27 28 29 30 39 40 41 42 51 52 53 54 ...
+    63 64 65 66 75 76 77 78];
 %% Build Markov Model
 LL = eps;
 LLc = eps;
@@ -349,11 +357,14 @@ LLc = eps;
 for k = 1:nd
     Rk = Sdat(k,1);   % subj's rating 0 to 100
     Pk = Pred(k,1);   % subjective probability for question
-%   Cross validation    
-%     if ismember(k,disj_index) == 0
+%   Cross validation: is this question in the held out test set?
+    istest = (heldout == 1) && ismember(k,disj_index) || ...
+             (heldout == 2) && ismember(k,conj_index);
         K = drift_add([alphakk,ckk,Pk],m);
-        T1 = expm(K) ;
-        Psyf = T1*Psy0;
+%         T1 = expm(K) ;
+%         Psyf = T1*Psy0;
+        % expm(K)*Psy0 without forming expm(K); K is tridiagonal, so sparse is faster
+        Psyf = expmv(sparse(K),Psy0);
         %Mean and final state
         Ms(k) = (0:100)*Psyf;
         Ks(k,:) = Psyf;
@@ -370,14 +381,13 @@ for k = 1:nd
             %disp([alphau,alphad,Pk,Rkj,Psyf(Rkj)]);
             PR = PR + Psyf(Rkj,1);
         end
-        LL = LL + log(PR);
-        
         %Cross validation test result
-%         if ismember(k,conj_index) == 1
-%             LLc = LLc + log(PR);
-%         end
-    %end
-end  
+        if istest
+            LLc = LLc + log(PR);
+        else
+            LL = LL + log(PR);
+        end
+end
 
 nLL = nLL + -2*LL;
 nLLc = nLLc + -2*LLc;

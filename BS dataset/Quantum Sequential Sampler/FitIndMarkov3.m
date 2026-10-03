@@ -65,7 +65,7 @@ end
 
 pAorB = 1 - pnAandnB;
 pnAorB = 1 - pAandnB;
-pAornB = 1 - pnAorB;
+pAornB = 1 - pnAandB;
 pnAornB = 1 - pAandB;
 
 %%
